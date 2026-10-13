@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-10-13T21:33:30.963Z",
+ "updatedAt": "2026-10-13T21:41:29.162Z",
  "weeks": {
   "2026-W42": {
    "americas__2026-10-13__c": true,
@@ -21,6 +21,7 @@
    "cuatro-vientos__2026-10-13__m": true,
    "cuatro-vientos__2026-10-13__t": true,
    "cuatro-vientos__2026-10-13__z": true,
+   "eden__2026-10-13__z": true,
    "fabricato__2026-10-13__m": true,
    "fabricato__2026-10-13__t": true,
    "fabricato__2026-10-13__z": true,
