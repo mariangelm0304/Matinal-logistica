@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Matinal logística</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: cabecera con navegación de semana, pestañas por día + resumen, tabla de 17 tiendas × 5 ítems */
+:root{
+  --bg:#f5f4f5; --surface:#ffffff; --ink:#1c1a1b; --muted:#6c696b; --line:#e2dfe0; --soft:#efedee;
+  --accent:#D2132C; --accent-ink:#ffffff; --accent-soft:#fbe6e9;
+  --ok:#0e8a5c; --ok-soft:#dff3ea; --mid:#a8680a; --mid-soft:#fbefd6; --low:#b4232f; --low-soft:#fbe3e5;
+  --c-m:#2563eb; --c-m-s:#dbe8fd; --c-c:#7c3aed; --c-c-s:#e9defc; --c-t:#ea7a0c; --c-t-s:#fde6cc;
+  --c-z:#0d9488; --c-z-s:#d2f1ed; --c-b:#db2777; --c-b-s:#fbdcea; --hero:#D2132C; --hero-ink:#ffffff;
+  --f-display:'Syne','DM Sans',system-ui,sans-serif; --f-body:'DM Sans',system-ui,sans-serif; --f-mono:'DM Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141214; --surface:#1e1b1d; --ink:#f2eff0; --muted:#a39fa1; --line:#363234; --soft:#2a2628;
+  --accent:#ff5468; --accent-ink:#1a0508; --accent-soft:#3a1a1f;
+  --ok:#3fd093; --ok-soft:#133528; --mid:#e8b04a; --mid-soft:#3a2d10; --low:#ff7b88; --low-soft:#401b20;
+  --c-m:#6b9bff; --c-m-s:#1b2a4d; --c-c:#a98bff; --c-c-s:#2d2150; --c-t:#ffa04d; --c-t-s:#47290d;
+  --c-z:#3ed4c4; --c-z-s:#10393a; --c-b:#ff6fb0; --c-b-s:#4a1b33; --hero:#8f0f21; --hero-ink:#fff4f5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141214; --surface:#1e1b1d; --ink:#f2eff0; --muted:#a39fa1; --line:#363234; --soft:#2a2628;
+  --accent:#ff5468; --accent-ink:#1a0508; --accent-soft:#3a1a1f;
+  --ok:#3fd093; --ok-soft:#133528; --mid:#e8b04a; --mid-soft:#3a2d10; --low:#ff7b88; --low-soft:#401b20;
+  --c-m:#6b9bff; --c-m-s:#1b2a4d; --c-c:#a98bff; --c-c-s:#2d2150; --c-t:#ffa04d; --c-t-s:#47290d;
+  --c-z:#3ed4c4; --c-z-s:#10393a; --c-b:#ff6fb0; --c-b-s:#4a1b33; --hero:#8f0f21; --hero-ink:#fff4f5; color-scheme:dark}
+*{box-sizing:border-box}
+.ic-m{--ic:var(--c-m);--ics:var(--c-m-s)}.ic-c{--ic:var(--c-c);--ics:var(--c-c-s)}.ic-t{--ic:var(--c-t);--ics:var(--c-t-s)}
+.ic-z{--ic:var(--c-z);--ics:var(--c-z-s)}.ic-b{--ic:var(--c-b);--ics:var(--c-b-s)}
+th.ic{background:var(--ics);color:var(--ic);border-bottom:3px solid var(--ic)}
+th.ic .tag{color:var(--ic);opacity:.85}
+td.ic{background:color-mix(in srgb,var(--ics) 45%,transparent)}
+.chk.ic{border-color:var(--ic);background:var(--surface)}
+.chk.ic[aria-pressed="true"]{background:var(--ic);border-color:var(--ic);color:#fff}
+.chk.ic:hover{box-shadow:0 0 0 3px var(--ics)}
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:10px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.hero .eyebrow{color:var(--hero-ink);opacity:.8}
+.hero .nav button,.hero .nav input{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:var(--hero-ink)}
+.hero .nav button:hover{background:rgba(255,255,255,.26)}
+.hero .weekbox .m{color:var(--hero-ink);opacity:.85}
+.hero .nav input{color-scheme:dark}
+.hero :focus-visible{outline-color:#fff}
+.kpi.k1 .v{color:var(--accent)}.kpi.k2 .v{color:var(--c-m)}.kpi.k3 .v{color:var(--ok)}
+.kpis{padding:12px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.bar>i.ib{background:var(--ic)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1100px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{}
+h1{font-family:var(--f-display);font-size:26px;line-height:1.1;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.nav button,.nav input{height:36px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding-inline:12px}
+.nav .arrow{width:36px;padding:0;font-size:18px}
+.nav input{font-family:var(--f-body);color:var(--ink)}
+.weekbox{min-width:0}
+.weekbox .w{font-family:var(--f-display);font-size:18px}
+.weekbox .m{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 12px;text-align:left;min-width:78px}
+.tab .d{font-weight:600}
+.tab .n{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tab[aria-selected="true"] .n{color:var(--accent-ink);opacity:.8}
+.tab.res{border-color:var(--c-c);color:var(--c-c)}
+.tab.res .n{color:var(--c-c)}
+.tab.res[aria-selected="true"]{background:var(--c-c);border-color:var(--c-c);color:#fff}
+.tab.res[aria-selected="true"] .n{color:#fff}
+.tab.today .d::after{content:" · hoy";font-weight:400;font-size:11px;font-family:var(--f-mono)}
+.tab.res{margin-left:auto}
+.banner{padding:10px 12px;border-radius:6px;background:var(--mid-soft);color:var(--mid);font-size:13px}
+.kpis{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:center}
+.kpi .v{font-family:var(--f-display);font-size:22px;line-height:1}
+.kpi .l{font-size:12px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden;min-width:60px}
+.bar>i{display:block;height:100%;background:var(--ok)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.scroll{overflow-x:auto}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:640px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+th{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface);position:sticky;top:0}
+th .tag{display:block;font-family:var(--f-mono);font-size:10px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+th.vid{color:var(--accent)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;min-width:150px;font-weight:600}
+tr:last-child td{border-bottom:0}
+.chk{width:36px;height:36px;border-radius:6px;border:1.5px solid var(--line);background:var(--surface);display:inline-grid;place-items:center;padding:0}
+.chk svg{width:18px;height:18px;opacity:0}
+.chk[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.chk[aria-pressed="true"] svg{opacity:1}
+.chk:hover{border-color:var(--ink)}
+.all{border:1px solid var(--line);background:transparent;border-radius:6px;padding:4px 8px;font-size:12px;color:var(--muted)}
+.all:hover{color:var(--ink);border-color:var(--ink)}
+.tot{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.pill{display:inline-block;min-width:46px;padding:4px 8px;border-radius:6px;font-family:var(--f-mono);font-size:13px;border:0}
+.p5{background:var(--ok-soft);color:var(--ok)} .p3{background:var(--mid-soft);color:var(--mid)}
+.p1{background:var(--low-soft);color:var(--low)} .p0{background:var(--soft);color:var(--muted)} .pf{background:transparent;color:var(--muted)}
+button.pill:hover{outline:1.5px solid var(--ink)}
+tfoot td{font-weight:500;background:var(--soft);font-family:var(--f-mono);font-size:12px}
+tfoot td:first-child{background:var(--soft);font-family:var(--f-body);font-size:13px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media(min-width:860px){.grid2{grid-template-columns:minmax(0,1fr) 340px}}
+.panel{padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel h2{font-family:var(--f-display);font-size:16px;margin:0}
+.item{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.item .t{font-size:13px}.item .p{font-family:var(--f-mono);font-size:13px}
+.item .bar{grid-column:1/-1}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.primary{border:0;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:9px 14px;font-weight:600}
+textarea{width:100%;min-height:200px;font-family:var(--f-mono);font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:13px}
+.note{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.status{font-size:13px;color:var(--muted);min-width:0}
+.status.pend{color:var(--mid);font-weight:600}
+.toolbar .actions button:not(.primary){border:1px solid var(--line);background:transparent;border-radius:6px;padding:9px 14px}
+[hidden]{display:none!important}
+html{background:var(--bg)}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Control diario de tiendas</div>
+      <h1>Matinal logística</h1>
+    </div>
+    <div class="nav" role="group" aria-label="Navegación de semana">
+      <button class="arrow" id="prev" aria-label="Semana anterior">‹</button>
+      <div class="weekbox"><div class="w" id="wlabel"></div><div class="m" id="mlabel"></div></div>
+      <button class="arrow" id="next" aria-label="Semana siguiente">›</button>
+      <button id="hoy">Esta semana</button>
+      <input type="date" id="goto" aria-label="Ir a una fecha">
+    </div>
+  </header>
+  <div class="toolbar">
+    <span id="status" class="status"></span>
+    <div class="actions">
+      <button id="dl" class="primary">Descargar JSON</button>
+      <button id="imp">Importar JSON</button>
+      <button id="discard" hidden>Descartar cambios locales</button>
+      <input type="file" id="file" accept="application/json,.json" hidden>
+    </div>
+  </div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div id="view"></div>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const STORES=[
+ ['florida','Florida'],['mayorca','Mayorca'],['riohacha','Riohacha'],['sincelejo','Sincelejo'],['centro','Centro'],
+ ['americas','Américas'],['bogota-norte','Bogotá Norte'],['hiper','Hiper'],['fabricato','Fabricato'],['plazuela','Plazuela'],
+ ['san-felipe','San Felipe'],['molinos','Molinos'],['cra-30','Cra 30'],['norte','Norte'],['metropolitano','Metropolitano'],
+ ['cuatro-vientos','Cuatro vientos'],['eden','Eden']
+].map(([id,name])=>({id,name}));
+const ITEMS=[
+ {id:'m',name:'Reunión matinal',tag:'Foto'},
+ {id:'c',name:'Checklist logístico',tag:'Foto'},
+ {id:'t',name:'Tareas del día',tag:'Foto'},
+ {id:'z',name:'Zona de oportunidades',tag:'Foto'},
+ {id:'b',name:'Bodega al cierre',tag:'Foto'}
+];
+const DN=['Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MN=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const CHECK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4 8-9"/></svg>';
+
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const noon=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate(),12);
+const addDays=(d,n)=>{const x=noon(d);x.setDate(x.getDate()+n);return x};
+const mondayOf=d=>{const x=noon(d);const k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);return x};
+function isoWeek(m){const t=addDays(m,3);const y=t.getFullYear();const j=noon(new Date(y,0,4));const w=1+Math.round(((t-j)/864e5-3+((j.getDay()+6)%7))/7);return {y,w}}
+const weekId=m=>{const {y,w}=isoWeek(m);return y+'-W'+String(w).padStart(2,'0')};
+const isWed=i=>i===2;
+
+const LS='matinal-logistica-v1';
+let ws=mondayOf(new Date()), tab=0, marks={}, data={version:1,updatedAt:null,weeks:{}}, remoteUpdatedAt=null, remoteOk=null;
+const todayISO=()=>iso(new Date());
+const days=()=>DN.map((n,i)=>{const d=addDays(ws,i);return {i,n,d,iso:iso(d),num:d.getDate()}});
+const key=(s,dt,it)=>s+'__'+dt+'__'+it;
+const on=(s,dt,it)=>marks[key(s,dt,it)]===true;
+const cnt=(s,dt)=>ITEMS.reduce((a,it)=>a+(on(s,dt,it.id)?1:0),0);
+const elapsed=dt=>dt<=todayISO();
+const pct=(a,b)=>b?Math.round(a*100/b):null;
+const fp=v=>v==null?'—':v+'%';
+function defaultTab(){const t=todayISO();const ds=days();const k=ds.findIndex(x=>x.iso===t);
+  if(k>=0)return k; if(ds[5].iso<t)return 'res'; if(ds[0].iso>t)return 0; return 'res'}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+
+function subscribe(){marks=data.weeks[weekId(ws)]||{};render()}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(data))}catch(e){}}
+function persist(patch){
+  const id=weekId(ws);
+  const w=Object.assign({},data.weeks[id]||{});
+  Object.keys(patch).forEach(k=>{if(patch[k])w[k]=true;else delete w[k]});
+  if(Object.keys(w).length)data.weeks[id]=w;else delete data.weeks[id];
+  data.updatedAt=new Date().toISOString();
+  saveLocal();
+  marks=data.weeks[id]||{};
+  render();
+}
+const pending=()=>!!data.updatedAt&&(!remoteUpdatedAt||data.updatedAt>remoteUpdatedAt);
+const fmt=iso=>new Date(iso).toLocaleString('es-CO',{dateStyle:'medium',timeStyle:'short'});
+function validData(o){return o&&typeof o==='object'&&o.weeks&&typeof o.weeks==='object'&&!Array.isArray(o.weeks)}
+function cleanData(o){const w={};Object.keys(o.weeks).sort().forEach(id=>{const src=o.weeks[id];if(!src||typeof src!=='object')return;const k={};Object.keys(src).sort().forEach(x=>{if(src[x]===true)k[x]=true});if(Object.keys(k).length)w[id]=k});
+  return {version:1,updatedAt:typeof o.updatedAt==='string'?o.updatedAt:null,weeks:w}}
+function renderStatus(){
+  const el=document.getElementById('status');const p=pending();
+  document.getElementById('discard').hidden=!p;
+  el.classList.toggle('pend',p);
+  if(p)el.textContent='Cambios sin subir a GitHub. Descarga el JSON y reemplaza datos.json en el repositorio.';
+  else if(remoteOk===false)el.textContent='No se pudo leer datos.json del repositorio. Se muestran los datos guardados en este navegador.';
+  else el.textContent=remoteUpdatedAt?'Al día con el repositorio · actualizado '+fmt(remoteUpdatedAt):'Repositorio sin datos todavía. Marca, descarga el JSON y súbelo como datos.json.';
+}
+function toggle(s,dt,it){persist({[key(s,dt,it)]:!on(s,dt,it)})}
+function toggleAll(s,dt){const full=cnt(s,dt)===ITEMS.length;const p={};ITEMS.forEach(it=>p[key(s,dt,it.id)]=!full);persist(p)}
+
+function renderHead(){
+  const ds=days();const {w}=isoWeek(ws);const a=ds[0].d,b=ds[5].d;
+  const rng=a.getMonth()===b.getMonth()?`${a.getDate()}–${b.getDate()} ${MS[b.getMonth()]}`:`${a.getDate()} ${MS[a.getMonth()]} – ${b.getDate()} ${MS[b.getMonth()]}`;
+  document.getElementById('wlabel').textContent='Semana '+w+' · '+rng;
+  const mm=a.getMonth()===b.getMonth()?MN[a.getMonth()]:MN[a.getMonth()]+' / '+MN[b.getMonth()];
+  document.getElementById('mlabel').textContent=mm.charAt(0).toUpperCase()+mm.slice(1)+' '+b.getFullYear();
+  document.getElementById('goto').value=iso(ws);
+  renderStatus();
+  const t=todayISO();
+  document.getElementById('tabs').innerHTML=ds.map(x=>{
+    const done=STORES.filter(s=>cnt(s.id,x.iso)===ITEMS.length).length;
+    return `<button class="tab${x.iso===t?' today':''}" role="tab" aria-selected="${tab===x.i}" data-tab="${x.i}"><div class="d">${x.n} ${x.num}</div><div class="n">${done}/${STORES.length} completas</div></button>`}).join('')
+   +`<button class="tab res" role="tab" aria-selected="${tab==='res'}" data-tab="res"><div class="d">Resumen semanal</div><div class="n">para el reporte</div></button>`;
+}
+
+function dayView(){
+  const x=days()[tab];const wed=isWed(x.i);
+  const total=STORES.length*ITEMS.length;
+  let done=0,full=0;STORES.forEach(s=>{const c=cnt(s.id,x.iso);done+=c;if(c===ITEMS.length)full++});
+  const p=pct(done,total);
+  const head=ITEMS.map(it=>{const vid=wed&&it.id==='b';return `<th class="ic ic-${it.id}">${vid?'Video de bodega':it.name}<span class="tag">${vid?'Video · miércoles':it.tag}</span></th>`}).join('');
+  const rows=STORES.map(s=>{
+    const c=cnt(s.id,x.iso);
+    const cells=ITEMS.map(it=>`<td class="ic ic-${it.id}"><button class="chk ic ic-${it.id}" data-s="${s.id}" data-i="${it.id}" aria-pressed="${on(s.id,x.iso,it.id)}" aria-label="${s.name}: ${wed&&it.id==='b'?'Video de bodega':it.name}">${CHECK}</button></td>`).join('');
+    return `<tr><td>${s.name}</td>${cells}<td class="tot">${c}/${ITEMS.length}</td><td><button class="all" data-all="${s.id}">${c===ITEMS.length?'Quitar':'Todo'}</button></td></tr>`}).join('');
+  return `<div class="kpis" style="margin-bottom:12px">
+    <div class="kpi k1"><div class="v">${full}/${STORES.length}</div><div class="l">tiendas con todo</div></div>
+    <div class="kpi k2"><div class="v">${done}/${total}</div><div class="l">envíos recibidos</div></div>
+    <div class="kpi k3" style="flex:1;min-width:140px"><div class="v">${fp(p)}</div><div class="bar" style="margin-top:6px"><i style="width:${p||0}%"></i></div></div>
+  </div>
+  <div class="card scroll"><table><thead><tr><th>Tienda · ${x.n} ${x.num} ${MS[x.d.getMonth()]}</th>${head}<th>Total</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${wed?'<p class="note">Los miércoles el envío de bodega al cierre es en video, no en foto.</p>':''}`;
+}
+
+function pillClass(c,past){if(c===5)return 'p5';if(!past)return 'pf';if(c>=3)return 'p3';if(c>=1)return 'p1';return 'p0'}
+function stats(){
+  const ds=days().filter(x=>elapsed(x.iso));
+  const perStore=STORES.map(s=>{let d=0;ds.forEach(x=>d+=cnt(s.id,x.iso));return {s,d,t:ds.length*ITEMS.length,p:pct(d,ds.length*ITEMS.length)}});
+  const perItem=ITEMS.map(it=>{let d=0;ds.forEach(x=>STORES.forEach(s=>{if(on(s.id,x.iso,it.id))d++}));const t=ds.length*STORES.length;return {it,d,t,p:pct(d,t)}});
+  let D=0;perStore.forEach(r=>D+=r.d);const T=ds.length*STORES.length*ITEMS.length;
+  return {ds,perStore,perItem,D,T,p:pct(D,T)};
+}
+function summaryView(){
+  const all=days();const st=stats();
+  const head=all.map(x=>`<th>${x.n} ${x.num}</th>`).join('');
+  const rows=STORES.map((s,k)=>{
+    const cells=all.map(x=>{const c=cnt(s.id,x.iso);const past=elapsed(x.iso);return `<td><button class="pill ${pillClass(c,past)}" data-go="${x.i}">${past||c?c+'/5':'·'}</button></td>`}).join('');
+    const r=st.perStore[k];
+    return `<tr><td>${s.name}</td>${cells}<td class="tot">${fp(r.p)}</td></tr>`}).join('');
+  const foot=all.map(x=>{const f=STORES.filter(s=>cnt(s.id,x.iso)===5).length;return `<td>${elapsed(x.iso)||f?f+'/'+STORES.length:'·'}</td>`}).join('');
+  const items=st.perItem.map(r=>`<div class="item ic-${r.it.id}"><span class="t">${r.it.name}</span><span class="p" style="color:var(--ic)">${fp(r.p)}</span><div class="bar"><i class="ib" style="width:${r.p||0}%"></i></div></div>`).join('');
+  return `<div class="grid2">
+   <div class="card scroll"><table><thead><tr><th>Tienda</th>${head}<th>Cumpl.</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>Tiendas completas</td>${foot}<td>${fp(st.p)}</td></tr></tfoot></table></div>
+   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+     <div class="card panel"><h2>Cumplimiento por ítem</h2>${items||'<span class="note">Sin días evaluados todavía.</span>'}
+       <p class="note" style="margin:0">Se calcula sobre ${st.ds.length} día(s) transcurridos × ${STORES.length} tiendas.</p></div>
+     <div class="card panel"><h2>Reporte semanal</h2>
+       <div class="actions"><button class="primary" id="copy">Copiar reporte</button></div>
+       <div id="rep"></div></div>
+   </div></div>`;
+}
+function reportText(){
+  const st=stats();const ds=days();const {w}=isoWeek(ws);
+  const L=[];
+  L.push(`REPORTE MATINAL LOGÍSTICA · Semana ${w} (${ds[0].num} ${MS[ds[0].d.getMonth()]} – ${ds[5].num} ${MS[ds[5].d.getMonth()]} ${ds[5].d.getFullYear()})`);
+  L.push(`Cumplimiento general: ${fp(st.p)} (${st.D}/${st.T} envíos)`);
+  L.push('');L.push('Por tienda:');
+  [...st.perStore].sort((a,b)=>(b.p??-1)-(a.p??-1)).forEach(r=>L.push(`- ${r.s.name}: ${fp(r.p)} (${r.d}/${r.t})`));
+  L.push('');L.push('Por ítem:');
+  st.perItem.forEach(r=>L.push(`- ${r.it.name}: ${fp(r.p)}`));
+  const miss=[];
+  st.perStore.forEach(r=>{const f=[];st.ds.forEach(x=>{const m=ITEMS.filter(it=>!on(r.s.id,x.iso,it.id));if(m.length)f.push(`${x.n} ${x.num}: ${m.map(i=>i.id==='b'&&isWed(x.i)?'Video de bodega':i.name).join(', ')}`)});if(f.length)miss.push(`- ${r.s.name} → ${f.join(' | ')}`)});
+  if(miss.length){L.push('');L.push('Pendientes por tienda:');L.push(...miss)}
+  return L.join('\n');
+}
+
+function render(){
+  renderHead();
+  const v=document.getElementById('view');
+  const sc=window.scrollY;
+  v.innerHTML=tab==='res'?summaryView():dayView();
+  window.scrollTo(0,sc);
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.tab!==undefined){tab=t.dataset.tab==='res'?'res':+t.dataset.tab;render();return}
+  if(t.classList.contains('chk')&&typeof tab==='number'){toggle(t.dataset.s,days()[tab].iso,t.dataset.i);return}
+  if(t.dataset.all&&typeof tab==='number'){toggleAll(t.dataset.all,days()[tab].iso);return}
+  if(t.dataset.go!==undefined){tab=+t.dataset.go;render();window.scrollTo(0,0);return}
+  if(t.id==='prev'||t.id==='next'){ws=addDays(ws,t.id==='prev'?-7:7);tab=defaultTab();subscribe();return}
+  if(t.id==='hoy'){ws=mondayOf(new Date());tab=defaultTab();subscribe();return}
+  if(t.id==='copy'){
+    const txt=reportText();
+    const show=()=>{const r=document.getElementById('rep');r.innerHTML='<textarea id="reptxt" readonly></textarea>';const ta=document.getElementById('reptxt');ta.value=txt;ta.focus();ta.select()};
+    try{navigator.clipboard.writeText(txt).then(()=>toast('Reporte copiado'),show)}catch(err){show()}
+  }
+});
+document.getElementById('goto').addEventListener('change',e=>{
+  if(!e.target.value)return;const [y,m,d]=e.target.value.split('-').map(Number);
+  ws=mondayOf(new Date(y,m-1,d,12));tab=defaultTab();subscribe();
+});
+
+tab=defaultTab();
+render();
+async function init(){
+  let local=null;
+  try{const t=localStorage.getItem(LS);if(t){const o=JSON.parse(t);if(validData(o))local=cleanData(o)}}catch(e){}
+  let remote=null;
+  try{
+    const r=await fetch('datos.json?v='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error(r.status);
+    const o=await r.json();if(!validData(o))throw new Error('formato');
+    remote=cleanData(o);remoteOk=true;remoteUpdatedAt=remote.updatedAt;
+  }catch(e){remoteOk=false}
+  if(remote&&!(local&&local.updatedAt&&(!remote.updatedAt||local.updatedAt>remote.updatedAt)))data=remote;
+  else if(local)data=local;
+  saveLocal();
+  subscribe();
+}
+init();
+
+document.getElementById('dl').addEventListener('click',()=>{
+  const out=cleanData(data);if(!out.updatedAt)out.updatedAt=new Date().toISOString();
+  const blob=new Blob([JSON.stringify(out,null,1)+'\n'],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='datos.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast('datos.json descargado. Súbelo al repositorio.');
+});
+document.getElementById('imp').addEventListener('click',()=>document.getElementById('file').click());
+document.getElementById('file').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const o=JSON.parse(await f.text());if(!validData(o))throw new Error('formato');
+    if(!window.confirm('Importar reemplaza los datos que ves ahora por los del archivo. ¿Continuar?'))return;
+    data=cleanData(o);data.updatedAt=new Date().toISOString();saveLocal();subscribe();toast('Datos importados');
+  }catch(err){toast('El archivo no tiene el formato de datos.json')}
+});
+document.getElementById('discard').addEventListener('click',async()=>{
+  if(!window.confirm('Se descartan los cambios de este navegador y se vuelve a los datos del repositorio. ¿Continuar?'))return;
+  try{localStorage.removeItem(LS)}catch(e){}
+  data={version:1,updatedAt:null,weeks:{}};remoteUpdatedAt=null;
+  await init();toast('Datos del repositorio cargados');
+});
+</script>
+</body></html>
