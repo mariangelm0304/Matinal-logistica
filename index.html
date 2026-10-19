@@ -159,7 +159,7 @@ const STORES=[
 ].map(([id,name])=>({id,name}));
 const ITEMS=[
  {id:'m',name:'Reunión matinal',tag:'Foto'},
- {id:'c',name:'Checklist logístico',tag:'Foto'},
+ {id:'c',name:'Checklist logístico',tag:'Foto',until:'2026-10-18'},
  {id:'t',name:'Tareas del día',tag:'Foto'},
  {id:'z',name:'Zona de oportunidades',tag:'Foto'},
  {id:'b',name:'Bodega al cierre',tag:'Foto'}
@@ -183,7 +183,8 @@ const todayISO=()=>iso(new Date());
 const days=()=>DN.map((n,i)=>{const d=addDays(ws,i);return {i,n,d,iso:iso(d),num:d.getDate()}});
 const key=(s,dt,it)=>s+'__'+dt+'__'+it;
 const on=(s,dt,it)=>marks[key(s,dt,it)]===true;
-const cnt=(s,dt)=>ITEMS.reduce((a,it)=>a+(on(s,dt,it.id)?1:0),0);
+const itemsOn=dt=>ITEMS.filter(it=>!it.until||dt<=it.until);
+const cnt=(s,dt)=>itemsOn(dt).reduce((a,it)=>a+(on(s,dt,it.id)?1:0),0);
 const elapsed=dt=>dt<=todayISO();
 const pct=(a,b)=>b?Math.round(a*100/b):null;
 const fp=v=>v==null?'—':v+'%';
@@ -218,7 +219,7 @@ function renderStatus(){
   else el.textContent=remoteUpdatedAt?'Al día con el repositorio · actualizado '+fmt(remoteUpdatedAt):'Repositorio sin datos todavía. Marca, descarga el JSON y súbelo como datos.json.';
 }
 function toggle(s,dt,it){persist({[key(s,dt,it)]:!on(s,dt,it)})}
-function toggleAll(s,dt){const full=cnt(s,dt)===ITEMS.length;const p={};ITEMS.forEach(it=>p[key(s,dt,it.id)]=!full);persist(p)}
+function toggleAll(s,dt){const its=itemsOn(dt);const full=cnt(s,dt)===its.length;const p={};its.forEach(it=>p[key(s,dt,it.id)]=!full);persist(p)}
 
 function renderHead(){
   const ds=days();const {w}=isoWeek(ws);const a=ds[0].d,b=ds[5].d;
@@ -230,21 +231,22 @@ function renderHead(){
   renderStatus();
   const t=todayISO();
   document.getElementById('tabs').innerHTML=ds.map(x=>{
-    const done=STORES.filter(s=>cnt(s.id,x.iso)===ITEMS.length).length;
+    const done=STORES.filter(s=>cnt(s.id,x.iso)===itemsOn(x.iso).length).length;
     return `<button class="tab${x.iso===t?' today':''}" role="tab" aria-selected="${tab===x.i}" data-tab="${x.i}"><div class="d">${x.n} ${x.num}</div><div class="n">${done}/${STORES.length} completas</div></button>`}).join('')
    +`<button class="tab res" role="tab" aria-selected="${tab==='res'}" data-tab="res"><div class="d">Resumen semanal</div><div class="n">para el reporte</div></button>`;
 }
 
 function dayView(){
   const x=days()[tab];const wed=isWed(x.i);
-  const total=STORES.length*ITEMS.length;
-  let done=0,full=0;STORES.forEach(s=>{const c=cnt(s.id,x.iso);done+=c;if(c===ITEMS.length)full++});
+  const its=itemsOn(x.iso);
+  const total=STORES.length*its.length;
+  let done=0,full=0;STORES.forEach(s=>{const c=cnt(s.id,x.iso);done+=c;if(c===its.length)full++});
   const p=pct(done,total);
-  const head=ITEMS.map(it=>{const vid=wed&&it.id==='b';return `<th class="ic ic-${it.id}">${vid?'Video de bodega':it.name}<span class="tag">${vid?'Video · miércoles':it.tag}</span></th>`}).join('');
+  const head=its.map(it=>{const vid=wed&&it.id==='b';return `<th class="ic ic-${it.id}">${vid?'Video de bodega':it.name}<span class="tag">${vid?'Video · miércoles':it.tag}</span></th>`}).join('');
   const rows=STORES.map(s=>{
     const c=cnt(s.id,x.iso);
-    const cells=ITEMS.map(it=>`<td class="ic ic-${it.id}"><button class="chk ic ic-${it.id}" data-s="${s.id}" data-i="${it.id}" aria-pressed="${on(s.id,x.iso,it.id)}" aria-label="${s.name}: ${wed&&it.id==='b'?'Video de bodega':it.name}">${CHECK}</button></td>`).join('');
-    return `<tr><td>${s.name}</td>${cells}<td class="tot">${c}/${ITEMS.length}</td><td><button class="all" data-all="${s.id}">${c===ITEMS.length?'Quitar':'Todo'}</button></td></tr>`}).join('');
+    const cells=its.map(it=>`<td class="ic ic-${it.id}"><button class="chk ic ic-${it.id}" data-s="${s.id}" data-i="${it.id}" aria-pressed="${on(s.id,x.iso,it.id)}" aria-label="${s.name}: ${wed&&it.id==='b'?'Video de bodega':it.name}">${CHECK}</button></td>`).join('');
+    return `<tr><td>${s.name}</td>${cells}<td class="tot">${c}/${its.length}</td><td><button class="all" data-all="${s.id}">${c===its.length?'Quitar':'Todo'}</button></td></tr>`}).join('');
   return `<div class="kpis" style="margin-bottom:12px">
     <div class="kpi k1"><div class="v">${full}/${STORES.length}</div><div class="l">tiendas con todo</div></div>
     <div class="kpi k2"><div class="v">${done}/${total}</div><div class="l">envíos recibidos</div></div>
@@ -254,22 +256,23 @@ function dayView(){
   ${wed?'<p class="note">Los miércoles el envío de bodega al cierre es en video, no en foto.</p>':''}`;
 }
 
-function pillClass(c,past){if(c===5)return 'p5';if(!past)return 'pf';if(c>=3)return 'p3';if(c>=1)return 'p1';return 'p0'}
+function pillClass(c,past,n){if(c===n)return 'p5';if(!past)return 'pf';if(c>=Math.ceil(n*.6))return 'p3';if(c>=1)return 'p1';return 'p0'}
 function stats(){
   const ds=days().filter(x=>elapsed(x.iso));
-  const perStore=STORES.map(s=>{let d=0;ds.forEach(x=>d+=cnt(s.id,x.iso));return {s,d,t:ds.length*ITEMS.length,p:pct(d,ds.length*ITEMS.length)}});
-  const perItem=ITEMS.map(it=>{let d=0;ds.forEach(x=>STORES.forEach(s=>{if(on(s.id,x.iso,it.id))d++}));const t=ds.length*STORES.length;return {it,d,t,p:pct(d,t)}});
-  let D=0;perStore.forEach(r=>D+=r.d);const T=ds.length*STORES.length*ITEMS.length;
+  const slots=ds.reduce((a,x)=>a+itemsOn(x.iso).length,0);
+  const perStore=STORES.map(s=>{let d=0;ds.forEach(x=>d+=cnt(s.id,x.iso));return {s,d,t:slots,p:pct(d,slots)}});
+  const perItem=ITEMS.map(it=>{const dd=ds.filter(x=>itemsOn(x.iso).includes(it));let d=0;dd.forEach(x=>STORES.forEach(s=>{if(on(s.id,x.iso,it.id))d++}));const t=dd.length*STORES.length;return {it,d,t,p:pct(d,t)}}).filter(r=>r.t>0);
+  let D=0;perStore.forEach(r=>D+=r.d);const T=slots*STORES.length;
   return {ds,perStore,perItem,D,T,p:pct(D,T)};
 }
 function summaryView(){
   const all=days();const st=stats();
   const head=all.map(x=>`<th>${x.n} ${x.num}</th>`).join('');
   const rows=STORES.map((s,k)=>{
-    const cells=all.map(x=>{const c=cnt(s.id,x.iso);const past=elapsed(x.iso);return `<td><button class="pill ${pillClass(c,past)}" data-go="${x.i}">${past||c?c+'/5':'·'}</button></td>`}).join('');
+    const cells=all.map(x=>{const c=cnt(s.id,x.iso);const n=itemsOn(x.iso).length;const past=elapsed(x.iso);return `<td><button class="pill ${pillClass(c,past,n)}" data-go="${x.i}">${past||c?c+'/'+n:'·'}</button></td>`}).join('');
     const r=st.perStore[k];
     return `<tr><td>${s.name}</td>${cells}<td class="tot">${fp(r.p)}</td></tr>`}).join('');
-  const foot=all.map(x=>{const f=STORES.filter(s=>cnt(s.id,x.iso)===5).length;return `<td>${elapsed(x.iso)||f?f+'/'+STORES.length:'·'}</td>`}).join('');
+  const foot=all.map(x=>{const f=STORES.filter(s=>cnt(s.id,x.iso)===itemsOn(x.iso).length).length;return `<td>${elapsed(x.iso)||f?f+'/'+STORES.length:'·'}</td>`}).join('');
   const items=st.perItem.map(r=>`<div class="item ic-${r.it.id}"><span class="t">${r.it.name}</span><span class="p" style="color:var(--ic)">${fp(r.p)}</span><div class="bar"><i class="ib" style="width:${r.p||0}%"></i></div></div>`).join('');
   return `<div class="grid2">
    <div class="card scroll"><table><thead><tr><th>Tienda</th>${head}<th>Cumpl.</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>Tiendas completas</td>${foot}<td>${fp(st.p)}</td></tr></tfoot></table></div>
@@ -291,7 +294,7 @@ function reportText(){
   L.push('');L.push('Por ítem:');
   st.perItem.forEach(r=>L.push(`- ${r.it.name}: ${fp(r.p)}`));
   const miss=[];
-  st.perStore.forEach(r=>{const f=[];st.ds.forEach(x=>{const m=ITEMS.filter(it=>!on(r.s.id,x.iso,it.id));if(m.length)f.push(`${x.n} ${x.num}: ${m.map(i=>i.id==='b'&&isWed(x.i)?'Video de bodega':i.name).join(', ')}`)});if(f.length)miss.push(`- ${r.s.name} → ${f.join(' | ')}`)});
+  st.perStore.forEach(r=>{const f=[];st.ds.forEach(x=>{const m=itemsOn(x.iso).filter(it=>!on(r.s.id,x.iso,it.id));if(m.length)f.push(`${x.n} ${x.num}: ${m.map(i=>i.id==='b'&&isWed(x.i)?'Video de bodega':i.name).join(', ')}`)});if(f.length)miss.push(`- ${r.s.name} → ${f.join(' | ')}`)});
   if(miss.length){L.push('');L.push('Pendientes por tienda:');L.push(...miss)}
   return L.join('\n');
 }
