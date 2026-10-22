@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-10-22T12:46:22.182Z",
+ "updatedAt": "2026-10-22T14:07:22.183Z",
  "weeks": {
   "2026-W42": {
    "americas__2026-10-13__c": true,
@@ -384,6 +384,7 @@
    "americas__2026-10-20__m": true,
    "americas__2026-10-20__t": true,
    "americas__2026-10-20__z": true,
+   "americas__2026-10-21__b": true,
    "americas__2026-10-21__m": true,
    "americas__2026-10-21__t": true,
    "americas__2026-10-21__z": true,
@@ -432,6 +433,8 @@
    "cuatro-vientos__2026-10-21__m": true,
    "cuatro-vientos__2026-10-21__t": true,
    "cuatro-vientos__2026-10-21__z": true,
+   "cuatro-vientos__2026-10-22__t": true,
+   "cuatro-vientos__2026-10-22__z": true,
    "eden__2026-10-19__b": true,
    "eden__2026-10-19__m": true,
    "eden__2026-10-19__t": true,
@@ -562,7 +565,9 @@
    "sincelejo__2026-10-21__b": true,
    "sincelejo__2026-10-21__m": true,
    "sincelejo__2026-10-21__t": true,
-   "sincelejo__2026-10-21__z": true
+   "sincelejo__2026-10-21__z": true,
+   "sincelejo__2026-10-22__m": true,
+   "sincelejo__2026-10-22__t": true
   }
  }
 }
